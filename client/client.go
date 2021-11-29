@@ -1,13 +1,18 @@
 package main
 
-import "chat/client/memnu"
+import (
+	"chat/client/init"
+	"chat/client/worker"
+)
 
-//func init (){
-//	init.Connecting = init.C_connting()
-//
-//}
+func init() {
+	init.Connecting = init.C_connting()
+
+}
 
 func main() {
-	memnu.Firstlevel()
-
+	wk := &worker.Work{
+		Conn: init.Connecting,
+	}
+	wk.Worker()
 }

@@ -2,13 +2,18 @@ package memnu
 
 import (
 	msg "chat/Message_type"
+	"chat/client/client_func"
 	"fmt"
 	"os"
 )
 
 var userinfo msg.LoginMsg
 
-func Firstlevel() {
+type Menus struct {
+	client_func.LR
+}
+
+func (M *Menus) Firstlevel() {
 	//var message msg.Messages
 	var loginmsg msg.LoginMsg
 	var key int

@@ -13,8 +13,8 @@ type Messager struct {
 }
 
 // Msgjson 消息的序列化，返回一个字符串
-func (M *Messager) Msgjson(message msg.Messages) (b []byte) {
-	b, err := json.Marshal(message)
+func (M *Messager) Msgjson(v interface{}) (b []byte) {
+	b, err := json.Marshal(v)
 	if err != nil {
 		fmt.Println("message marshal failed")
 	}
@@ -31,9 +31,9 @@ func (M *Messager) UnJson(b []byte) (payload msg.Messages) {
 }
 
 //MsgReader 读取信息
-func (M *Messager) MsgReader(b []byte) (messages msg.Messages) {
+func (M *Messager) MsgReader() (messages msg.Messages) {
 	var buf []byte
-	_, err := M.Conn.Read(b[:4])
+	_, err := M.Conn.Read(buf[:4])
 	if err != nil {
 		fmt.Println("d读取消息体长度失败", err)
 		return
@@ -46,6 +46,7 @@ func (M *Messager) MsgReader(b []byte) (messages msg.Messages) {
 	}
 	data := M.UnJson(buf[:n])
 	return data
+
 }
 
 // MsgSender 发送信息
