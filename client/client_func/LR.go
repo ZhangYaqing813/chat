@@ -1,7 +1,7 @@
 package client_func
 
 import (
-	message_type "chat/Message_type"
+	messagetype "chat/Message_type"
 	"chat/Pb_mothd/msgproc"
 	"fmt"
 )
@@ -11,15 +11,15 @@ type LR struct {
 	msgproc.Messager
 }
 
-func (L *LR) Login(loginmsg message_type.LoginMsg) {
-	var msg message_type.Messages
+func (L *LR) Login(loginmsg messagetype.LoginMsg) {
+	var msg messagetype.Messages
 
-	msg.Type = message_type.LoginMsgType
+	msg.Type = messagetype.LoginMsgType
 	msg.Data = string(L.Msgjson(loginmsg))
 
 	L.MsgSender(msg)
 
-	msg = L.MsgReader()
+	//msg = L.MsgReader()
 	fmt.Println(msg)
 
 }

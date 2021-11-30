@@ -47,3 +47,10 @@ type UserOnlie struct {
 	Type       string `json:"type"`
 	UsersOnlie string `json:"usersonlie"`
 }
+
+// status code
+
+const (
+	SUCCESS = 200
+	FAILED  = 500
+)

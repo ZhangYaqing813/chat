@@ -1,18 +1,18 @@
 package main
 
 import (
-	"chat/client/init"
+	"chat/client/begin"
 	"chat/client/worker"
 )
 
 func init() {
-	init.Connecting = init.C_connting()
+	begin.Connecting = begin.C_connting()
 
 }
 
 func main() {
 	wk := &worker.Work{
-		Conn: init.Connecting,
+		Conn: begin.Connecting,
 	}
 	wk.Worker()
 }

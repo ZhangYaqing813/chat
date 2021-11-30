@@ -32,7 +32,7 @@ func (M *Messager) UnJson(b []byte) (payload msg.Messages) {
 
 //MsgReader 读取信息
 func (M *Messager) MsgReader() (messages msg.Messages) {
-	var buf []byte
+	var buf [8192]byte
 	_, err := M.Conn.Read(buf[:4])
 	if err != nil {
 		fmt.Println("d读取消息体长度失败", err)

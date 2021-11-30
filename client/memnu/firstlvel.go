@@ -27,8 +27,8 @@ func (M *Menus) Firstlevel() {
 		fmt.Println("请输入选择：(1-3):")
 		fmt.Scanf("%d\n", &key)
 
-		user := 100
-		password := "zyq"
+		//user := 100
+		//password := "zyq"
 		switch key {
 		case 1:
 			//var userinfo PublicMethods.LoginMsg
@@ -37,12 +37,14 @@ func (M *Menus) Firstlevel() {
 			fmt.Println("请输入用户密码：")
 			fmt.Scanf("%s\n", &loginmsg.UserPwd)
 
-			if loginmsg.UserID == user && loginmsg.UserPwd == password {
-				fmt.Println("登录成功")
-			} else {
-				fmt.Println("登录失败")
-				return
-			}
+			M.Login(loginmsg)
+
+			//if loginmsg.UserID == user && loginmsg.UserPwd == password {
+			//	fmt.Println("登录成功")
+			//} else {
+			//	fmt.Println("登录失败")
+			//	return
+			//}
 
 			//err := usermsg.Login(userinfo)
 			//if err != nil {
