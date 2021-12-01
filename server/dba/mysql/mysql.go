@@ -1,6 +1,7 @@
 package msconnecting
 
 import (
+	message_type "chat/Message_type"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
@@ -25,8 +26,20 @@ func Factroy() *sqlx.DB {
 }
 
 // Insert  插入数据
-func (M *MysqlConnect) Insert() {
+func (M *MysqlConnect) Insert(msg message_type.RegMsg) (id int64, err error) {
 
+	r, err := M.DB.Exec("insert into users(username,password)values (?,?)", msg.UserName, msg.UserPwd)
+	if err != nil {
+		fmt.Println("insert data failed ", err)
+		return 0, err
+	}
+
+	userid, err := r.LastInsertId()
+	if err != nil {
+		fmt.Println("返回userid failed ", err)
+		return 0, err
+	}
+	return userid, err
 }
 
 // Update 更新数据
@@ -41,6 +54,12 @@ func (M *MysqlConnect) Delete() {
 
 // Modify 修改数据
 
-func (M *MysqlConnect) Modify() {
+func (M *MysqlConnect) Select(msg message_type.LoginMsg) (userinfo []message_type.LoginMsg) {
 
+	err := M.DB.Select(&userinfo, "select password from users where username = ? ", msg.UserName)
+	if err != nil {
+		fmt.Println("exec failed ", err)
+		return
+	}
+	return userinfo
 }
