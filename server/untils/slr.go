@@ -20,7 +20,7 @@ func (S *Slr) Slogin(userinfo msg.LoginMsg) (code int) {
 
 	user := S.Select(userinfo)
 
-	if user[0].UserName == userinfo.UserName && user[0].UserPwd == userinfo.UserPwd {
+	if user[0].UserName == userinfo.UserName && user[0].Password == userinfo.Password {
 		fmt.Println("登录成功")
 		code = msg.SUCCESS
 	} else {

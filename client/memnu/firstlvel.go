@@ -32,10 +32,10 @@ func (M *Menus) Firstlevel() {
 		switch key {
 		case 1:
 			//var userinfo PublicMethods.LoginMsg
-			fmt.Println("请输入用户ID：")
-			fmt.Scanf("%d\n", &loginmsg.UserID)
+			fmt.Println("请输入用户名：")
+			fmt.Scanf("%s\n", &loginmsg.UserName)
 			fmt.Println("请输入用户密码：")
-			fmt.Scanf("%s\n", &loginmsg.UserPwd)
+			fmt.Scanf("%s\n", &loginmsg.Password)
 
 			M.Login(loginmsg)
 

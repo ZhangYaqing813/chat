@@ -19,7 +19,7 @@ func (L *LR) Login(loginmsg messagetype.LoginMsg) {
 
 	L.MsgSender(msg)
 
-	//msg = L.MsgReader()
+	msg = L.MsgReader()
 	fmt.Println(msg)
 
 }

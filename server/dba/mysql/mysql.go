@@ -10,17 +10,17 @@ import (
 var MSconn *sqlx.DB
 
 type MysqlConnect struct {
-	DB sqlx.DB
+	DB *sqlx.DB
 }
 
 func Factroy() *sqlx.DB {
-	dbconnect, err := sqlx.Open("mysql", "root:123456@tcp(172.30.1.2:3306)/chat")
+	dbconnect, err := sqlx.Open("mysql", "root:root@tcp(172.30.1.2:3306)/chat")
 
 	if err != nil {
 		fmt.Println("mysql db connect failed", err)
 	}
 	fmt.Println("mysql factory running")
-	dbconnect.Close()
+	//defer dbconnect.Close()
 
 	return dbconnect
 }
@@ -28,7 +28,7 @@ func Factroy() *sqlx.DB {
 // Insert  插入数据
 func (M *MysqlConnect) Insert(msg message_type.RegMsg) (id int64, err error) {
 
-	r, err := M.DB.Exec("insert into users(username,password)values (?,?)", msg.UserName, msg.UserPwd)
+	r, err := M.DB.Exec("insert into chat.users(username,password)values (?,?)", msg.UserName, msg.UserPwd)
 	if err != nil {
 		fmt.Println("insert data failed ", err)
 		return 0, err
@@ -52,14 +52,16 @@ func (M *MysqlConnect) Delete() {
 
 }
 
-// Modify 修改数据
+// Select 查找数据
 
 func (M *MysqlConnect) Select(msg message_type.LoginMsg) (userinfo []message_type.LoginMsg) {
 
-	err := M.DB.Select(&userinfo, "select password from users where username = ? ", msg.UserName)
+	fmt.Println("msg message_type.LoginMsg Select ", msg)
+	err := M.DB.Select(&userinfo, "select userid,username, password from chat.users where username =? ", msg.UserName)
 	if err != nil {
 		fmt.Println("exec failed ", err)
 		return
 	}
+	fmt.Println(userinfo)
 	return userinfo
 }
