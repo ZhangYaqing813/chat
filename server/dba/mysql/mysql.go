@@ -28,7 +28,7 @@ func Factroy() *sqlx.DB {
 // Insert  插入数据
 func (M *MysqlConnect) Insert(msg message_type.RegMsg) (id int64, err error) {
 
-	r, err := M.DB.Exec("insert into chat.users(username,password)values (?,?)", msg.UserName, msg.UserPwd)
+	r, err := M.DB.Exec("insert into chat.users(username,password)values (?,?)", msg.UserName, msg.Password)
 	if err != nil {
 		fmt.Println("insert data failed ", err)
 		return 0, err

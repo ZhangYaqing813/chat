@@ -37,7 +37,7 @@ type RegMsg struct {
 	// 用户Id
 	UserID int `json:"userid" DB:"userid"`
 	//用户密码
-	UserPwd string `json:"userpwd" DB:"password"`
+	Password string `json:"password" DB:"password"`
 	//用户名
 	UserName string `json:"username" DB:"username"`
 	//UserEmail

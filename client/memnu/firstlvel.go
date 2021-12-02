@@ -1,13 +1,13 @@
 package memnu
 
 import (
-	msg "chat/Message_type"
+	messagetype "chat/Message_type"
 	"chat/client/client_func"
 	"fmt"
 	"os"
 )
 
-var userinfo msg.LoginMsg
+//var userinfo msg.LoginMsg
 
 type Menus struct {
 	client_func.LR
@@ -15,7 +15,8 @@ type Menus struct {
 
 func (M *Menus) Firstlevel() {
 	//var message msg.Messages
-	var loginmsg msg.LoginMsg
+	var loginmsg messagetype.LoginMsg
+	var userReg messagetype.RegMsg
 	var key int
 
 	for {
@@ -27,8 +28,6 @@ func (M *Menus) Firstlevel() {
 		fmt.Println("请输入选择：(1-3):")
 		fmt.Scanf("%d\n", &key)
 
-		//user := 100
-		//password := "zyq"
 		switch key {
 		case 1:
 			//var userinfo PublicMethods.LoginMsg
@@ -37,33 +36,22 @@ func (M *Menus) Firstlevel() {
 			fmt.Println("请输入用户密码：")
 			fmt.Scanf("%s\n", &loginmsg.Password)
 
-			M.Login(loginmsg)
+			code, error := M.Login(loginmsg)
+			if code == 200 && error == "" {
+				fmt.Println("用户登录成功 ")
+			}
 
-			//if loginmsg.UserID == user && loginmsg.UserPwd == password {
-			//	fmt.Println("登录成功")
-			//} else {
-			//	fmt.Println("登录失败")
-			//	return
-			//}
+		case 2:
+			fmt.Println("新用户注册")
+			fmt.Println("请输入用户名：")
+			fmt.Scanf("%s\n", &userReg.UserName)
+			fmt.Println("请输入用户密码：")
+			fmt.Scanf("%s\n", &userReg.Password)
+			code, error := M.Register(userReg)
+			if code == 200 && error == "" {
+				fmt.Println("注册成功")
+			}
 
-			//err := usermsg.Login(userinfo)
-			//if err != nil {
-			//	fmt.Printf("user login failed %v", err)
-			//	os.Exit(0)
-			//}
-
-		//case 2:
-		//	//var usReg PublicMethods.RegMsg
-		//	fmt.Println("新用户注册")
-		//	fmt.Println("请输入用户ID：")
-		//	fmt.Scanf("%d\n", &usReg.UserID)
-		//	fmt.Println("请输入用户密码：")
-		//	fmt.Scanf("%s\n", &usReg.UserPwd)
-		//
-		//	err := usermsg.Register(usReg)
-		//	if err != nil {
-		//		fmt.Println("user register failed ", err)
-		//	}
 		//case 3:
 		//	err := usermsg.ExitOS(userinfo.UserID)
 		//	if err != nil {

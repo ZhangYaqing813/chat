@@ -22,11 +22,15 @@ func (G *Gateway) Gateway() {
 		},
 	}
 	var message msg.Messages
-
 	message = G.MsgReader()
 	fmt.Println("message = G.MsgReader()", message)
 	switch message.Type {
 
+	// 处理用户登录逻辑
+	// 1、解析message 中的 message.data 字段
+	// 2、还原后传参给Slogin  处理
+	// 3、接收Slogin 返回数据组装返回给client
+	// 4、根据返回的code 	进行下一步处理
 	case msg.LoginMsgType:
 		//login func
 		var userinfo msg.LoginMsg
@@ -35,22 +39,30 @@ func (G *Gateway) Gateway() {
 		json.Unmarshal([]byte(message.Data), &userinfo)
 		fmt.Println("msg.LoginMsgType userinfo", userinfo)
 		code := slr.Slogin(userinfo)
-
+		//其他处理逻辑
+		// .......
 		responeloginmsg.Code = code
+
 		lmsg.Type = msg.RegMsgType
 		lmsg.Data = string(G.Msgjson(responeloginmsg))
 		G.MsgSender(lmsg)
 
+	// 处理用户注册逻辑
+	// 1、解析message 中的 message.data 字段
+	// 2、还原后传参给Register 处理
+	// 3、接收register 返回数据组装返回给client
 	case msg.ResMsg:
 		// register func
 		var userinfo msg.RegMsg
 		var responeregmsg msg.LResMsg
 		var rrmsg msg.Messages
+		json.Unmarshal([]byte(message.Data), &userinfo)
 		code, err := slr.Register(userinfo)
 		if err != nil {
 			fmt.Println("register failed ", err)
 		}
-
+		// 其他处理逻辑
+		//........
 		responeregmsg.Code = code
 		rrmsg.Type = msg.RegMsgType
 		rrmsg.Data = string(G.Msgjson(responeregmsg))

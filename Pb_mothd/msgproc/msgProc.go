@@ -13,6 +13,7 @@ type Messager struct {
 }
 
 // Msgjson 消息的序列化，返回一个字符串
+//修改返回值类型
 func (M *Messager) Msgjson(v interface{}) (b []byte) {
 	b, err := json.Marshal(v)
 	if err != nil {
@@ -50,6 +51,9 @@ func (M *Messager) MsgReader() (messages msg.Messages) {
 }
 
 // MsgSender 发送信息
+// 1、获取message 消息的长度，装入 buf 的前四位
+// 2、发送buf[:4] 给server 端，告知server端本次发送数据的长度
+// 3、
 func (M *Messager) MsgSender(messages msg.Messages) {
 	var buf [8192]byte
 	// 计算出要发送的消息体的长度，然后发送个对端，根据发送的长度进行数据校验
