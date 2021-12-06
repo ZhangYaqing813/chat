@@ -1,6 +1,7 @@
 package redism
 
 import (
+	msg "chat/Message_type"
 	"fmt"
 	"github.com/gomodule/redigo/redis"
 	"time"
@@ -16,6 +17,7 @@ type RedisOpt struct {
 
 func RedisPools(address string, maxIdle, maxActive int, idleTimeout time.Duration) {
 	RedisPool = &redis.Pool{
+
 		MaxIdle:     maxIdle,
 		MaxActive:   maxActive,
 		IdleTimeout: idleTimeout,
@@ -33,10 +35,11 @@ func RedisFac(pool *redis.Pool) (MyRedis *RedisOpt) {
 	MyRedis = &RedisOpt{
 		pool: pool,
 	}
+	fmt.Println("redis init running", pool)
 	return
 }
 
-func (R *RedisOpt) Add(db, data string, username string) (code int, err error) {
+func (R *RedisOpt) Add(userConn []byte, username string) (code int, err error) {
 	//申请连接
 	conn := R.pool.Get()
 	defer func() {
@@ -46,7 +49,72 @@ func (R *RedisOpt) Add(db, data string, username string) (code int, err error) {
 		}
 	}()
 
-	//_, err := conn.Do("HSET","")
+	_, err = conn.Do("AUTH", "12345678")
+	if err != nil {
+		fmt.Println("Redis auth failed ", err)
+		return
+	} else {
+		_, err = conn.Do("HSET", "OnLine_user", username, userConn)
+		//fmt.Println("HSET______",conn_user)
+		if err != nil {
+			fmt.Println("add online user failed ", err)
+			code = msg.FAILED
+			return code, err
 
-	return
+		}
+		code = msg.SUCCESS
+	}
+	return code, err
+}
+
+func (R *RedisOpt) Get(username []string) (user []string, err error) {
+	//申请连接
+	conn := R.pool.Get()
+	defer func() {
+		err := conn.Close()
+		if err != nil {
+			fmt.Println("redis conn close failed ", err)
+		}
+	}()
+
+	_, err = conn.Do("AUTH", "12345678")
+	if err != nil {
+		return nil, err
+	} else {
+		for _, key := range username {
+			_, err := redis.Strings(conn.Do("HGET", "OnLine_user", key))
+			if err != nil {
+				continue
+			} else {
+				//user = append(user,cAdd)
+			}
+		}
+	}
+
+	return user, err
+}
+
+func (R *RedisOpt) Delete(username []string) (code int, err error) {
+	//申请连接
+	conn := R.pool.Get()
+	defer func() {
+		err := conn.Close()
+		if err != nil {
+			fmt.Println("redis conn close failed ", err)
+		}
+	}()
+
+	_, err = conn.Do("AUTH", "12345678")
+	if err != nil {
+		fmt.Println("Redis auth failed ", err)
+		return msg.FAILED, err
+	} else {
+		for _, key := range username {
+			_, err := conn.Do("HDEL", "OnLine_user", key)
+			if err != nil {
+				continue
+			}
+		}
+	}
+	return msg.SUCCESS, err
 }

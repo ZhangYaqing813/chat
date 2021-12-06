@@ -3,6 +3,7 @@ package main
 import (
 	"chat/Pb_mothd/msgproc"
 	msconnecting "chat/server/dba/mysql"
+	redism "chat/server/dba/redis"
 	"chat/server/gateway"
 	"fmt"
 	"net"
@@ -18,6 +19,9 @@ func init() {
 	//初始化工作
 	// 初始化mysql 链接
 	msconnecting.MSconn = msconnecting.Factroy()
+	//初始话redis
+	redism.RedisPools("172.30.1.2:6379", 16, 0, 300)
+	redism.MyRedis = redism.RedisFac(redism.RedisPool)
 }
 
 func main() {
@@ -50,6 +54,8 @@ func main() {
 			}
 			//调用gateway 方法
 			gw.Gateway()
+			fmt.Println("conn =", &gw.Conn)
+			fmt.Println(gw.Conn)
 		}()
 	}
 }

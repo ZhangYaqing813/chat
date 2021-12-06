@@ -7,6 +7,12 @@ const (
 	ExitMsgType  = "Exit"
 )
 
+// status code
+const (
+	SUCCESS = 200
+	FAILED  = 500
+)
+
 //LoginMsg 登录是向server 提交的用户信息
 type LoginMsg struct { // 用户注册消息的结构体
 	// 用户Id
@@ -48,13 +54,11 @@ type RegMsg struct {
 
 type UserOnlie struct {
 	//
-	Type       string `json:"type"`
-	UsersOnlie string `json:"usersonlie"`
+	Type        string `json:"type"`
+	UsersOnline string `json:"usersonline"`
 }
 
-// status code
-
-const (
-	SUCCESS = 200
-	FAILED  = 500
-)
+type UserOlineIntoRedis struct {
+	UserName string `json:"username"`
+	UserConn string `json:"userconn"`
+}

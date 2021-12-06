@@ -1,8 +1,10 @@
 package msgproc
 
 import (
+	"bytes"
 	msg "chat/Message_type"
 	"encoding/binary"
+	"encoding/gob"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -15,6 +17,7 @@ type Messager struct {
 // Msgjson 消息的序列化，返回一个字符串
 //修改返回值类型
 func (M *Messager) Msgjson(v interface{}) (b []byte) {
+	//fmt.Println("Msgjson ",v)
 	b, err := json.Marshal(v)
 	if err != nil {
 		fmt.Println("message marshal failed")
@@ -75,4 +78,14 @@ func (M *Messager) MsgSender(messages msg.Messages) {
 // Transmit 转发信息
 func (M *Messager) Transmit(messages msg.Messages) {
 
+}
+
+func (M *Messager) GetBytes(key interface{}) ([]byte, error) {
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	err := enc.Encode(key)
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
 }
