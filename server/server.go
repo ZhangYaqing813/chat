@@ -44,6 +44,7 @@ func main() {
 		if err != nil {
 			fmt.Println("linster.accept failed ", err)
 		}
+		fmt.Println("remote conn =", conn.RemoteAddr())
 		// 多携程处理客户端请求
 		go func() {
 			//初始化路由实例，并将conn 地址传递
@@ -54,8 +55,6 @@ func main() {
 			}
 			//调用gateway 方法
 			gw.Gateway()
-			fmt.Println("conn =", &gw.Conn)
-			fmt.Println(gw.Conn)
 		}()
 	}
 }

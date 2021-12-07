@@ -1,16 +1,23 @@
 package message_type
 
+import "net"
+
 const (
 	LoginMsgType = "LoginMsg"
 	RegMsgType   = "RegMsgType"
 	ResMsg       = "ResMsg"
 	ExitMsgType  = "Exit"
+	ChatMode     = "Chat"
 )
 
 // status code
 const (
 	SUCCESS = 200
 	FAILED  = 500
+	// SINGLE 单聊模式
+	SINGLE = 1
+	//MULTIPLE 多人聊天模式
+	MULTIPLE = 2
 )
 
 //LoginMsg 登录是向server 提交的用户信息
@@ -52,13 +59,28 @@ type RegMsg struct {
 	Sex string `json:"sex" DB:"sex"`
 }
 
-type UserOnlie struct {
-	//
-	Type        string `json:"type"`
-	UsersOnline string `json:"usersonline"`
+// UserOnline  获取redis 中在线用户的用户名
+type UserOnline struct {
+	UsersOnline []string `json:"usersonline,[]string"`
 }
 
+// UserOlineIntoRedis 用于写入redis
 type UserOlineIntoRedis struct {
-	UserName string `json:"username"`
-	UserConn string `json:"userconn"`
+	UserName string   `json:"username"`
+	UserConn net.Conn `json:"userconn,net.Conn"`
+}
+
+// ChatSignal 聊天模式
+// sendmod 可以为 S/s 单聊，M/m 多聊
+
+// ChatSignal 聊天模式，以及聊天对象
+type ChatSignal struct {
+	SendMod string   `json:"sendmod"`
+	Users   []string `json:"users,[]string"`
+}
+
+// Dialogue 对话信息
+type Dialogue struct {
+	ChatSignal `json:"chatsignal"`
+	Content    string `json:"content"`
 }

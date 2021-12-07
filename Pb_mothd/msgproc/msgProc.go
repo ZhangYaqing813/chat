@@ -1,10 +1,8 @@
 package msgproc
 
 import (
-	"bytes"
 	msg "chat/Message_type"
 	"encoding/binary"
-	"encoding/gob"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -76,16 +74,11 @@ func (M *Messager) MsgSender(messages msg.Messages) {
 }
 
 // Transmit 转发信息
-func (M *Messager) Transmit(messages msg.Messages) {
+func (M *Messager) Transmit(dialogueMessage msg.Dialogue) {
+	// 1、 根据 dialogueMessage.ChatSignal.SendMod  模式获取发送消息对象的内存地址
 
-}
+	// 2、 封装 需要转发的message ,
 
-func (M *Messager) GetBytes(key interface{}) ([]byte, error) {
-	var buf bytes.Buffer
-	enc := gob.NewEncoder(&buf)
-	err := enc.Encode(key)
-	if err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
+	// 3、
+
 }

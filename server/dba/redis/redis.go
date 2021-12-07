@@ -39,7 +39,7 @@ func RedisFac(pool *redis.Pool) (MyRedis *RedisOpt) {
 	return
 }
 
-func (R *RedisOpt) Add(userConn []byte, username string) (code int, err error) {
+func (R *RedisOpt) Add(onlineUser string, username string) (code int, err error) {
 	//申请连接
 	conn := R.pool.Get()
 	defer func() {
@@ -54,7 +54,8 @@ func (R *RedisOpt) Add(userConn []byte, username string) (code int, err error) {
 		fmt.Println("Redis auth failed ", err)
 		return
 	} else {
-		_, err = conn.Do("HSET", "OnLine_user", username, userConn)
+
+		_, err = conn.Do("HSET", "OnLine_user", username, onlineUser)
 		//fmt.Println("HSET______",conn_user)
 		if err != nil {
 			fmt.Println("add online user failed ", err)
@@ -69,6 +70,8 @@ func (R *RedisOpt) Add(userConn []byte, username string) (code int, err error) {
 
 func (R *RedisOpt) Get(username []string) (user []string, err error) {
 	//申请连接
+	index := 0
+	onlineuser := make([]string, 1024)
 	conn := R.pool.Get()
 	defer func() {
 		err := conn.Close()
@@ -79,19 +82,23 @@ func (R *RedisOpt) Get(username []string) (user []string, err error) {
 
 	_, err = conn.Do("AUTH", "12345678")
 	if err != nil {
-		return nil, err
+		return user, err
 	} else {
+
 		for _, key := range username {
-			_, err := redis.Strings(conn.Do("HGET", "OnLine_user", key))
+			cAdd, err := redis.String(conn.Do("HGET", "OnLine_user", key))
 			if err != nil {
 				continue
 			} else {
-				//user = append(user,cAdd)
+				//onlineuser[index].UserName=key
+				//onlineuser[index].UserConn = cAdd
+				user = append(user, cAdd)
 			}
+			index++
 		}
 	}
 
-	return user, err
+	return onlineuser, err
 }
 
 func (R *RedisOpt) Delete(username []string) (code int, err error) {

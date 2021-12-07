@@ -5,9 +5,10 @@ import (
 	"chat/Pb_mothd/msgproc"
 	msconnecting "chat/server/dba/mysql"
 	"chat/server/untils"
-	"encoding/hex"
+	_ "encoding/hex"
 	"encoding/json"
 	"fmt"
+	_ "net"
 )
 
 type Gateway struct {
@@ -24,7 +25,7 @@ func (G *Gateway) Gateway() {
 	}
 	//var onlineUser msg.UserOlineIntoRedis
 
-	var onlineUser = make(map[string]string)
+	//var onlineUser  msg.UserOlineIntoRedis
 	var message msg.Messages
 	message = G.MsgReader()
 	fmt.Println("message = G.MsgReader()", message)
@@ -36,25 +37,21 @@ func (G *Gateway) Gateway() {
 	// 3、接收Slogin 返回数据组装返回给client
 	// 4、根据返回的code 	进行下一步处理
 	case msg.LoginMsgType:
-		//login func
+
 		var userinfo msg.LoginMsg
 		var responeloginmsg msg.LResMsg
 		var lmsg msg.Messages
+
 		json.Unmarshal([]byte(message.Data), &userinfo)
-		fmt.Println("msg.LoginMsgType userinfo", userinfo)
+		//fmt.Println("msg.LoginMsgType userinfo", userinfo)
 		code := slr.Slogin(userinfo)
 		responeloginmsg.Code = code
 
 		lmsg.Type = msg.RegMsgType
 		lmsg.Data = string(G.Msgjson(responeloginmsg))
 		G.MsgSender(lmsg)
-
+		//fmt.Println("&G.Conn",&G.Conn)
 		//其他处理逻辑
-		fmt.Println(&G.Conn)
-		data, _ := json.Marshal(&G.Conn)
-		onlineUser[userinfo.UserName] = hex.EncodeToString(data)
-
-		fmt.Println("-------", onlineUser)
 
 	// 处理用户注册逻辑
 	// 1、解析message 中的 message.data 字段
