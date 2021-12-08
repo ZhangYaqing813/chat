@@ -1,6 +1,8 @@
 package message_type
 
-import "net"
+import (
+	"net"
+)
 
 const (
 	LoginMsgType = "LoginMsg"
@@ -8,6 +10,7 @@ const (
 	ResMsg       = "ResMsg"
 	ExitMsgType  = "Exit"
 	ChatMode     = "Chat"
+	UPDATE       = "UPDATE"
 )
 
 // status code
@@ -70,17 +73,17 @@ type UserOlineIntoRedis struct {
 	UserConn net.Conn `json:"userconn,net.Conn"`
 }
 
-// ChatSignal 聊天模式
-// sendmod 可以为 S/s 单聊，M/m 多聊
-
-// ChatSignal 聊天模式，以及聊天对象
-type ChatSignal struct {
-	SendMod string   `json:"sendmod"`
-	Users   []string `json:"users,[]string"`
-}
-
 // Dialogue 对话信息
+
 type Dialogue struct {
-	ChatSignal `json:"chatsignal"`
-	Content    string `json:"content"`
+	// sendmod 可以为 S/s 单聊，M/m 多聊
+	SendMod int `json:"sendmod"`
+	// 信息发送的对象，
+	ToUsers []string `json:"users,[]string"`
+	//消息的发送者
+	Sender string `json:"sender"`
+	//消息内容
+	Content string `json:"content"`
+	//发送消息的时间
+	SendTime string `json:"sendtime"`
 }

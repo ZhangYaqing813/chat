@@ -2,6 +2,7 @@ package msgproc
 
 import (
 	msg "chat/Message_type"
+	"chat/server/untils"
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
@@ -74,8 +75,28 @@ func (M *Messager) MsgSender(messages msg.Messages) {
 }
 
 // Transmit 转发信息
-func (M *Messager) Transmit(dialogueMessage msg.Dialogue) {
+// 消息转发确定的几个问题
+/*
+1、如何调用conn.write() 把信息转发到对应的user
+	1.1 conn的信息直接以参数的形式进行传参，修改 msgsender 方法
+	1.2 修改G.conn 值，然后进行方法调用，问题：会不会影响其他的正常消息发送
+2、消息中携带的信息应该有哪些
+	发送者
+	接受者
+	消息内容
+	时间
+3、消息转发完成后如何写入redis
+
+
+*/
+func (M *Messager) Transmit(dialogueMessage msg.Dialogue, messages msg.Messages) {
 	// 1、 根据 dialogueMessage.ChatSignal.SendMod  模式获取发送消息对象的内存地址
+
+	msg_send_user := untils.GetOlineUser(dialogueMessage.ToUsers)
+	for _, user := range msg_send_user {
+		M.Conn = user.UserConn
+		M.MsgSender(messages)
+	}
 
 	// 2、 封装 需要转发的message ,
 

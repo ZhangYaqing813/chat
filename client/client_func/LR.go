@@ -58,6 +58,19 @@ func (L *LR) Register(register_message messagetype.RegMsg) (code int, error stri
 	return recmsg.Code, recmsg.Error
 }
 
+// Chat 发送对话信息
+func (L *LR) Chat(dialogue messagetype.Dialogue) {
+
+	var message messagetype.Messages
+	//设置要发送的消息头尾 messagetype.ChatMode
+	message.Type = messagetype.ChatMode
+	// 格式化要发送的信息内用
+	message.Data = string(L.Msgjson(dialogue))
+	//发送消息
+	L.MsgSender(message)
+
+}
+
 // 保持和server 端的连接
 func (L *LR) keepSession() {
 	newmsg := L.MsgReader()
