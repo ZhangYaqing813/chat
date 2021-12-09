@@ -93,6 +93,7 @@ func (M *Menus) loginLevel(loginUser string) {
 		dialogue.Sender = loginUser
 
 		// 输入内用，
+
 		fmt.Println("请输入内容")
 		fmt.Scanf("%s\n", &dialogue.Content)
 		dialogue.SendTime = time.Now().Format("2006-01-02 15:04:05")

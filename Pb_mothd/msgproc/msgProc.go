@@ -58,6 +58,7 @@ func (M *Messager) MsgReader() (messages msg.Messages) {
 // 3、
 func (M *Messager) MsgSender(messages msg.Messages) {
 	var buf [8192]byte
+	fmt.Println("=====", M.Conn)
 	// 计算出要发送的消息体的长度，然后发送个对端，根据发送的长度进行数据校验
 	//可以在消息体message 中增加一个字段，接收者收到后取出进行对比
 	binary.BigEndian.PutUint32(buf[:4], uint32(len(M.Msgjson(messages))))
@@ -86,20 +87,27 @@ func (M *Messager) MsgSender(messages msg.Messages) {
 	消息内容
 	时间
 3、消息转发完成后如何写入redis
-
-
 */
 func (M *Messager) Transmit(dialogueMessage msg.Dialogue, messages msg.Messages) {
 	// 1、 根据 dialogueMessage.ChatSignal.SendMod  模式获取发送消息对象的内存地址
-
-	msg_send_user := untils.GetOlineUser(dialogueMessage.ToUsers)
-	for _, user := range msg_send_user {
-		M.Conn = user.UserConn
+	for _, sendToUser := range dialogueMessage.ToUsers {
+		M.Conn = untils.OnlineUserInfo[sendToUser]
 		M.MsgSender(messages)
 	}
+}
 
-	// 2、 封装 需要转发的message ,
-
-	// 3、
-
+//NotifyOnline 通知用户
+// NotifyOnline online 值为 true || false
+func (M *Messager) NotifyOnline(userName string, online bool) {
+	var message msg.Messages
+	message.Type = msg.UPDATE
+	if online {
+		message.Data = userName + "online"
+	} else {
+		message.Data = userName + "offline"
+	}
+	for _, user := range untils.OnlineUsers {
+		M.Conn = untils.OnlineUserInfo[user]
+		M.MsgSender(message)
+	}
 }

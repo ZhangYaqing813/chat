@@ -1,8 +1,6 @@
 package message_type
 
-import (
-	"net"
-)
+import "net"
 
 const (
 	LoginMsgType = "LoginMsg"
@@ -70,7 +68,13 @@ type UserOnline struct {
 // UserOlineIntoRedis 用于写入redis
 type UserOlineIntoRedis struct {
 	UserName string   `json:"username"`
-	UserConn net.Conn `json:"userconn,net.Conn"`
+	UserConn net.Conn `json:"userconn"`
+}
+
+// UserOlineOutRedis 用于写入redis
+type UserOlineOutRedis struct {
+	UserName string   `json:"username"`
+	UserConn net.Conn `json:"userconn"`
 }
 
 // Dialogue 对话信息

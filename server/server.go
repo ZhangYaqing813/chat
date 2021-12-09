@@ -45,6 +45,7 @@ func main() {
 			fmt.Println("linster.accept failed ", err)
 		}
 		fmt.Println("remote conn =", conn.RemoteAddr())
+		fmt.Println("lister.Accept= ", conn)
 		// 多携程处理客户端请求
 		go func() {
 			//初始化路由实例，并将conn 地址传递

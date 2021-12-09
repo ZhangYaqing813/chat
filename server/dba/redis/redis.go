@@ -69,9 +69,10 @@ func (R *RedisOpt) Add(onlineUser string, username string) (code int, err error)
 }
 
 func (R *RedisOpt) Get(username []string) (user []string, err error) {
+	fmt.Println("redis get user ", username)
 	//申请连接
 	index := 0
-	onlineuser := make([]string, 1024)
+
 	conn := R.pool.Get()
 	defer func() {
 		err := conn.Close()
@@ -92,13 +93,14 @@ func (R *RedisOpt) Get(username []string) (user []string, err error) {
 			} else {
 				//onlineuser[index].UserName=key
 				//onlineuser[index].UserConn = cAdd
+				fmt.Println("redis get user cAdd", cAdd)
 				user = append(user, cAdd)
 			}
 			index++
 		}
 	}
 
-	return onlineuser, err
+	return user, err
 }
 
 func (R *RedisOpt) Delete(username []string) (code int, err error) {
