@@ -27,14 +27,17 @@ func init() {
 }
 
 func main() {
+
 	//打开监听地址
 	lister, err := net.Listen("tcp", "127.0.0.1:19000")
 	if err != nil {
 		chatlog.Std.Fatal(err)
 	}
+
 	//接收客户端请求
 	for {
 		conn, err := lister.Accept()
+
 		if err != nil {
 			chatlog.Std.Fatal(err)
 		}

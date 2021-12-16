@@ -39,7 +39,15 @@ func RedisFac(pool *redis.Pool) (MyRedis *RedisOpt) {
 	return
 }
 
-func (R *RedisOpt) Add(onlineUser string, username string) (code int, err error) {
+// AddMessage 实现信息缓存到redis
+/*
+	1、redis 缓存的key 的命名方式为 key:userA field: recv_from_user/send_to_user/unread_message value
+		reFromUser 		该user 接收到的信息。
+		sendToUser   	该user 发送的信息
+		unreadMessage 	该user 未读的信息
+	2、确定 存入用户的那个一个field 中
+*/
+func (R *RedisOpt) AddMessage(username string, messages msg.Messages, fieldName string) (code int, err error) {
 	//申请连接
 	conn := R.pool.Get()
 	defer func() {
@@ -48,28 +56,28 @@ func (R *RedisOpt) Add(onlineUser string, username string) (code int, err error)
 			fmt.Println("redis conn close failed ", err)
 		}
 	}()
-
+	// redis 认证，认证通过后进行后续操作
 	_, err = conn.Do("AUTH", "12345678")
 	if err != nil {
-		fmt.Println("Redis auth failed ", err)
-		return
+		//fmt.Println("Redis auth failed ", err)
+		return code, err
 	} else {
-
-		_, err = conn.Do("HSET", "OnLine_user", username, onlineUser)
+		//写入redis
+		_, err = conn.Do("HSET", username, fieldName, messages)
 		//fmt.Println("HSET______",conn_user)
 		if err != nil {
-			fmt.Println("add online user failed ", err)
 			code = msg.FAILED
 			return code, err
-
 		}
 		code = msg.SUCCESS
 	}
 	return code, err
 }
 
-func (R *RedisOpt) Get(username []string) (user []string, err error) {
-	fmt.Println("redis get user ", username)
+//GetMessage
+
+func (R *RedisOpt) GetMessage(userName string, fieldName []string) (messages []string, err error) {
+	fmt.Println("redis get user ", userName)
 	//申请连接
 	index := 0
 
@@ -83,27 +91,26 @@ func (R *RedisOpt) Get(username []string) (user []string, err error) {
 
 	_, err = conn.Do("AUTH", "12345678")
 	if err != nil {
-		return user, err
+		return
 	} else {
-
-		for _, key := range username {
-			cAdd, err := redis.String(conn.Do("HGET", "OnLine_user", key))
+		for _, key := range fieldName {
+			cAdd, err := redis.String(conn.Do("HGET", userName, key))
 			if err != nil {
 				continue
 			} else {
 				//onlineuser[index].UserName=key
 				//onlineuser[index].UserConn = cAdd
 				fmt.Println("redis get user cAdd", cAdd)
-				user = append(user, cAdd)
+				messages = append(messages, cAdd)
 			}
 			index++
 		}
 	}
 
-	return user, err
+	return messages, err
 }
 
-func (R *RedisOpt) Delete(username []string) (code int, err error) {
+func (R *RedisOpt) Delete(username string, fieldNmae string) (code int, err error) {
 	//申请连接
 	conn := R.pool.Get()
 	defer func() {

@@ -19,6 +19,10 @@ const (
 	SINGLE = 1
 	//MULTIPLE 多人聊天模式
 	MULTIPLE = 2
+	// USERONLINE 用户在线
+	USERONLINE = 1
+	// USEROFFLINE 用户不在线
+	USEROFFLINE = 2
 )
 
 //LoginMsg 登录是向server 提交的用户信息
