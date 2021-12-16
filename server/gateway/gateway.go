@@ -2,7 +2,7 @@ package gateway
 
 import (
 	msg "chat/Message_type"
-	msconnecting "chat/server/dba/mysql"
+	mySql "chat/server/dba/mysql"
 	"chat/server/msgproc"
 	"chat/server/untils"
 	_ "encoding/hex"
@@ -19,8 +19,8 @@ type Gateway struct {
 
 func (G *Gateway) Gateway() {
 	slr := &untils.Slr{
-		msconnecting.MysqlConnect{
-			DB: msconnecting.MSconn,
+		MysqlConnect: mySql.MysqlConnect{
+			DB: mySql.MSconn,
 		},
 	}
 	//var message msg.Messages
@@ -32,35 +32,41 @@ func (G *Gateway) Gateway() {
 			fmt.Println("err")
 			break
 		}
-		//fmt.Println("gateway recv msg ", message)
+
 		switch message.Type {
 		// 处理用户登录逻辑
-		// 1、解析message 中的 message.data 字段
-		// 2、还原后传参给Slogin  处理
-		// 3、接收Slogin 返回数据组装返回给client
-		// 4、根据返回的code 	进行下一步处理
+
 		case msg.LoginMsgType:
 			var userinfo msg.LoginMsg
-			var responeloginmsg msg.LResMsg
-			var lmsg msg.Messages
-			json.Unmarshal([]byte(message.Data), &userinfo)
-			// 用户登录验证成功后返回给客户一个登录成功的code
-			code := slr.Slogin(userinfo)
-			responeloginmsg.Code = code
-			lmsg.Type = msg.RegMsgType
-			lmsg.Data = string(G.Msgjson(responeloginmsg))
-			G.MsgSender(lmsg)
-
-			//通知其他用户改用户上线成功
-			// 当untils.OnlineUsers 长度为零是表示没有在线用户，不需要发送用户上线通知
-			if untils.OnlineUsers[0] == "" {
-				//上线用户加入在线用户列表
-				untils.AddUser(userinfo.UserName, G.Messager.Conn)
-			} else {
-				// 通知在线用户
-				G.NotifyOnline(userinfo.UserName, true)
+			var resPoneLoginMsg msg.LResMsg
+			var lMsg msg.Messages
+			// 1、解析message 中的 message.data 字段
+			err = json.Unmarshal([]byte(message.Data), &userinfo)
+			if err != nil {
+				fmt.Println(err)
 			}
-
+			// 2、还原后传参给SLogin  处理
+			// 用户登录验证成功后返回给客户一个登录成功的code
+			// 单独使用一个code 变量，用于后续有需要的考虑
+			code := slr.Slogin(userinfo)
+			// 3、接收sLogin 返回数据组装返回给client
+			resPoneLoginMsg.Code = code
+			lMsg.Type = msg.RegMsgType
+			lMsg.Data = string(G.Msgjson(resPoneLoginMsg))
+			// 4、回复客户端认证结果
+			G.MsgSender(lMsg)
+			//后续操作
+			if code == msg.SUCCESS {
+				//通知其他用户改用户上线成功
+				// 当OnlineUsers 长度为零是表示没有在线用户，不需要发送用户上线通知
+				if untils.OnlineUsers[0] == "" {
+					//上线用户加入在线用户列表
+					untils.AddUser(userinfo.UserName, G.Messager.Conn)
+				} else {
+					// 通知在线用户
+					G.NotifyOnline(userinfo.UserName, true)
+				}
+			}
 			continue
 		// 处理用户注册逻辑
 		// 1、解析message 中的 message.data 字段
@@ -69,27 +75,32 @@ func (G *Gateway) Gateway() {
 		case msg.ResMsg:
 			// register func
 			var userinfo msg.RegMsg
-			var responeregmsg msg.LResMsg
-			var rrmsg msg.Messages
-			json.Unmarshal([]byte(message.Data), &userinfo)
+			var resPoneLoginMsg msg.LResMsg
+			var rRMsg msg.Messages
+			err := json.Unmarshal([]byte(message.Data), &userinfo)
+			if err != nil {
+				fmt.Println(err)
+			}
 			code, err := slr.Register(userinfo)
 			if err != nil {
 				fmt.Println("register failed ", err)
 			}
 			// 其他处理逻辑
 			//........
-			responeregmsg.Code = code
-			rrmsg.Type = msg.RegMsgType
-			rrmsg.Data = string(G.Msgjson(responeregmsg))
-			G.MsgSender(rrmsg)
+			resPoneLoginMsg.Code = code
+			rRMsg.Type = msg.RegMsgType
+			rRMsg.Data = string(G.Msgjson(resPoneLoginMsg))
+			G.MsgSender(rRMsg)
 
 		// 用户消息转发处理逻辑
 		//
 		case msg.ChatMode:
 			var dia msg.Dialogue
-			json.Unmarshal([]byte(message.Data), &dia)
+			err = json.Unmarshal([]byte(message.Data), &dia)
+			if err != nil {
+				fmt.Println(err)
+			}
 			G.Transmit(dia, message)
-
 		default:
 			fmt.Println("and so on ......")
 		}

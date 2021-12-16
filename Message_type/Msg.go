@@ -70,12 +70,14 @@ type UserOnline struct {
 }
 
 // UserOlineIntoRedis 用于写入redis
+// 暂时未用
 type UserOlineIntoRedis struct {
 	UserName string   `json:"username"`
 	UserConn net.Conn `json:"userconn"`
 }
 
 // UserOlineOutRedis 用于写入redis
+// 暂时未用
 type UserOlineOutRedis struct {
 	UserName string   `json:"username"`
 	UserConn net.Conn `json:"userconn"`
