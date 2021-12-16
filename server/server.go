@@ -1,11 +1,12 @@
 package main
 
 import (
-	"chat/Pb_mothd/msgproc"
+	chatlog "chat/chatLog"
 	msconnecting "chat/server/dba/mysql"
 	redism "chat/server/dba/redis"
 	"chat/server/gateway"
-	"fmt"
+	"chat/server/msgproc"
+	log "github.com/sirupsen/logrus"
 	"net"
 )
 
@@ -22,31 +23,25 @@ func init() {
 	//初始话redis
 	redism.RedisPools("172.30.1.2:6379", 16, 0, 300)
 	redism.MyRedis = redism.RedisFac(redism.RedisPool)
+	chatlog.Init()
 }
 
 func main() {
 	//打开监听地址
-	lister, err := net.Listen("tcp", "127.0.0.1:9000")
+	lister, err := net.Listen("tcp", "127.0.0.1:19000")
 	if err != nil {
-		fmt.Println("net.listen failed ", err)
+		chatlog.Std.Fatal(err)
 	}
-
-	//关闭练级
-	defer func() {
-		err := lister.Close()
-		if err != nil {
-			fmt.Println("lister close failed ", err)
-		}
-	}()
 	//接收客户端请求
 	for {
 		conn, err := lister.Accept()
 		if err != nil {
-			fmt.Println("linster.accept failed ", err)
+			chatlog.Std.Fatal(err)
 		}
-		fmt.Println("remote conn =", conn.RemoteAddr())
-		fmt.Println("lister.Accept= ", conn)
-		// 多携程处理客户端请求
+		chatlog.Std.WithFields(log.Fields{
+			"RemoteIP": conn.RemoteAddr(),
+		}).Info("Client connected ")
+		// 多协程处理客户端请求
 		go func() {
 			//初始化路由实例，并将conn 地址传递
 			gw := &gateway.Gateway{
@@ -54,6 +49,7 @@ func main() {
 					Conn: conn,
 				},
 			}
+
 			//调用gateway 方法
 			gw.Gateway()
 		}()

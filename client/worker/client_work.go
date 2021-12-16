@@ -1,9 +1,9 @@
 package worker
 
 import (
-	"chat/Pb_mothd/msgproc"
 	"chat/client/client_func"
 	"chat/client/memnu"
+	"chat/client/msgproc"
 	"net"
 )
 

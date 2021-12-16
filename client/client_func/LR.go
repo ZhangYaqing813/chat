@@ -2,7 +2,7 @@ package client_func
 
 import (
 	messagetype "chat/Message_type"
-	"chat/Pb_mothd/msgproc"
+	"chat/client/msgproc"
 	"encoding/json"
 	"fmt"
 )
@@ -31,7 +31,12 @@ func (L *LR) Login(loginmsg messagetype.LoginMsg) (code int, error string) {
 	}
 	if recmsg.Code == 200 {
 		// 用一个协成 使client 和server 保持通讯
-		go L.keepSession()
+		go func() {
+			for {
+				L.keepSession()
+			}
+		}()
+
 	}
 	//返回解析完的数据
 	return recmsg.Code, recmsg.Error
@@ -72,6 +77,8 @@ func (L *LR) Chat(dialogue messagetype.Dialogue) {
 }
 
 // 保持和server 端的连接
+//
+
 func (L *LR) keepSession() {
 	newmsg := L.MsgReader()
 	fmt.Println(newmsg)

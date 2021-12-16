@@ -2,9 +2,12 @@ package msconnecting
 
 import (
 	message_type "chat/Message_type"
+	chatlog "chat/chatLog"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
+	log "github.com/sirupsen/logrus"
+	"os"
 )
 
 var MSconn *sqlx.DB
@@ -14,14 +17,13 @@ type MysqlConnect struct {
 }
 
 func Factroy() *sqlx.DB {
-	dbconnect, err := sqlx.Open("mysql", "root:root@tcp(172.30.1.2:3306)/chat")
-
+	// 修改为参数，或配置文件
+	dbconnect, err := sqlx.Open("mysql", "root:123456@tcp(172.30.1.251:3306)/chat")
 	if err != nil {
-		fmt.Println("mysql db connect failed", err)
+		chatlog.Std.Fatalf("MySql connect failed %v", err)
+		os.Exit(1)
 	}
-	fmt.Println("mysql factory running")
-	//defer dbconnect.Close()
-
+	chatlog.Std.Info("MySql 初始化完成")
 	return dbconnect
 }
 
@@ -30,7 +32,10 @@ func (M *MysqlConnect) Insert(msg message_type.RegMsg) (id int64, err error) {
 
 	r, err := M.DB.Exec("insert into chat.users(username,password)values (?,?)", msg.UserName, msg.Password)
 	if err != nil {
-		fmt.Println("insert data failed ", err)
+		chatlog.Std.WithFields(log.Fields{
+			"username": msg.UserName,
+			"password": "******",
+		}).Fatalf("MySql Insert  failed %v", err)
 		return 0, err
 	}
 
@@ -55,13 +60,13 @@ func (M *MysqlConnect) Delete() {
 // Select 查找数据
 
 func (M *MysqlConnect) Select(msg message_type.LoginMsg) (userinfo []message_type.LoginMsg) {
-
-	fmt.Println("msg message_type.LoginMsg Select ", msg)
 	err := M.DB.Select(&userinfo, "select userid,username, password from chat.users where username =? ", msg.UserName)
 	if err != nil {
-		fmt.Println("exec failed ", err)
+		chatlog.Std.WithFields(log.Fields{
+			"username": msg.UserName,
+			"password": "******",
+		}).Fatalf("MySql search failed %v", err)
 		return
 	}
-	fmt.Println(userinfo)
 	return userinfo
 }

@@ -1,7 +1,8 @@
 package untils
 
 import (
-	"fmt"
+	chatlog "chat/chatLog"
+	log "github.com/sirupsen/logrus"
 	"net"
 )
 
@@ -11,11 +12,12 @@ var OnlineUserInfo = make(map[string]net.Conn)
 var OnlineUsers = make([]string, 1024)
 
 // AddUser 向 OnlineUser 中添加一个上线的用户
+func AddUser(userName string, conn net.Conn) {
 
-func AddUser(userNmae string, conn net.Conn) {
-
-	fmt.Println("AddUser(userNmae string,conn net.Conn)", conn)
-	OnlineUserInfo[userNmae] = conn
+	chatlog.Std.WithFields(log.Fields{
+		"username": userName,
+	}).Info("Append The user to OnLine_user")
+	OnlineUserInfo[userName] = conn
 	for user, _ := range OnlineUserInfo {
 		OnlineUsers = append(OnlineUsers, user)
 	}
