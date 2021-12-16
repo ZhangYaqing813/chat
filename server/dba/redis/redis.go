@@ -39,15 +39,17 @@ func RedisFac(pool *redis.Pool) (MyRedis *RedisOpt) {
 	return
 }
 
-// AddMessage 实现信息缓存到redis
 /*
-	1、redis 缓存的key 的命名方式为 key:userA field: recv_from_user/send_to_user/unread_message value
-		reFromUser 		该user 接收到的信息。
-		sendToUser   	该user 发送的信息
-		unreadMessage 	该user 未读的信息
-	2、确定 存入用户的那个一个field 中
+	redis 缓存的key 的命名方式为 key:userAReFromUserB/userASendToUserB/userAUnreadMessage field:时间戳： value：message
+    key:
+        userAReFromUserB 	该user 接收到的信息。
+        userASendToUser B  	该user 发送的信息
+        userAUnreadMessage 	该user 未读的信息
 */
-func (R *RedisOpt) AddMessage(username string, messages msg.Messages, fieldName string) (code int, err error) {
+
+// AddMessage 实现信息缓存到redis
+
+func (R *RedisOpt) AddMessage(key string, messages msg.Messages, fieldName string) (code int, err error) {
 	//申请连接
 	conn := R.pool.Get()
 	defer func() {
@@ -63,7 +65,7 @@ func (R *RedisOpt) AddMessage(username string, messages msg.Messages, fieldName 
 		return code, err
 	} else {
 		//写入redis
-		_, err = conn.Do("HSET", username, fieldName, messages)
+		_, err = conn.Do("HSET", key, fieldName, messages)
 		//fmt.Println("HSET______",conn_user)
 		if err != nil {
 			code = msg.FAILED
@@ -76,8 +78,8 @@ func (R *RedisOpt) AddMessage(username string, messages msg.Messages, fieldName 
 
 //GetMessage
 
-func (R *RedisOpt) GetMessage(userName string, fieldName []string) (messages []string, err error) {
-	fmt.Println("redis get user ", userName)
+func (R *RedisOpt) GetMessage(key string, fieldName []string) (messages []string, err error) {
+	fmt.Println("redis get user ", key)
 	//申请连接
 	index := 0
 
@@ -93,15 +95,15 @@ func (R *RedisOpt) GetMessage(userName string, fieldName []string) (messages []s
 	if err != nil {
 		return
 	} else {
-		for _, key := range fieldName {
-			cAdd, err := redis.String(conn.Do("HGET", userName, key))
+		for _, field := range fieldName {
+			//改进一下，获取多个field
+
+			value, err := redis.String(conn.Do("HGET", key, field))
 			if err != nil {
 				continue
 			} else {
-				//onlineuser[index].UserName=key
-				//onlineuser[index].UserConn = cAdd
-				fmt.Println("redis get user cAdd", cAdd)
-				messages = append(messages, cAdd)
+				fmt.Println("redis get user cAdd", value)
+				messages = append(messages, value)
 			}
 			index++
 		}
@@ -110,7 +112,7 @@ func (R *RedisOpt) GetMessage(userName string, fieldName []string) (messages []s
 	return messages, err
 }
 
-func (R *RedisOpt) Delete(username string, fieldNmae string) (code int, err error) {
+func (R *RedisOpt) Delete(key string) (code int, err error) {
 	//申请连接
 	conn := R.pool.Get()
 	defer func() {
@@ -125,12 +127,15 @@ func (R *RedisOpt) Delete(username string, fieldNmae string) (code int, err erro
 		fmt.Println("Redis auth failed ", err)
 		return msg.FAILED, err
 	} else {
-		for _, key := range username {
-			_, err := conn.Do("HDEL", "OnLine_user", key)
-			if err != nil {
-				continue
-			}
-		}
+		//for _, valud := range username {
+		//	_, err := conn.Do("HDEL", key, key)
+		//	if err != nil {
+		//		continue
+		//	}
+		//}
+		// 删除 userAUnreadMessage 这里面的所有信息。
+		// _, err = conn.Do("Hdel", key,)
+
 	}
 	return msg.SUCCESS, err
 }

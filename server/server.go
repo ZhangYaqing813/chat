@@ -52,7 +52,6 @@ func main() {
 					Conn: conn,
 				},
 			}
-
 			//调用gateway 方法
 			gw.Gateway()
 		}()
