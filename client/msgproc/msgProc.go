@@ -3,7 +3,7 @@ package msgproc
 import (
 	msg "chat/Message_type"
 	chatlog "chat/chatLog"
-	"chat/server/untils"
+	"chat/server/utils"
 	"encoding/binary"
 	"encoding/json"
 	"io"
@@ -89,7 +89,7 @@ func (M *Messager) MsgSender(messages msg.Messages) {
 func (M *Messager) Transmit(dialogueMessage msg.Dialogue, messages msg.Messages) {
 	// 1、 根据 dialogueMessage.ChatSignal.SendMod  模式获取发送消息对象的内存地址
 	for _, sendToUser := range dialogueMessage.ToUsers {
-		M.Conn = untils.OnlineUserInfo[sendToUser]
+		M.Conn = utils.OnlineUserInfo[sendToUser]
 		M.MsgSender(messages)
 	}
 }
@@ -111,10 +111,10 @@ func (M *Messager) NotifyOnline(userName string, online bool) {
 	}
 	// 发送更新消息给在线用户列表
 
-	for _, user := range untils.OnlineUsers {
+	for _, user := range utils.OnlineUsers {
 
-		M.Conn = untils.OnlineUserInfo[user]
-		chatlog.Std.Infof("%s 连接地址：%v", user, untils.OnlineUserInfo[user])
+		M.Conn = utils.OnlineUserInfo[user]
+		chatlog.Std.Infof("%s 连接地址：%v", user, utils.OnlineUserInfo[user])
 		M.MsgSender(message)
 	}
 }

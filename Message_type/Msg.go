@@ -9,6 +9,8 @@ const (
 	ExitMsgType  = "Exit"
 	ChatMode     = "Chat"
 	UPDATE       = "UPDATE"
+	GETSENDMSG   = "SelfSend"
+	GETRECMSG    = "SelfReceive"
 )
 
 // status code
@@ -96,4 +98,10 @@ type Dialogue struct {
 	Content string `json:"content"`
 	//发送消息的时间
 	SendTime string `json:"sendtime"`
+}
+
+type History struct {
+	//对谁的聊天记录
+	User     string   `json:"user"`
+	Messages []string `json:"messages"`
 }

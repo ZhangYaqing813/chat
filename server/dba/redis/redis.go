@@ -2,6 +2,7 @@ package redism
 
 import (
 	msg "chat/Message_type"
+	chatlog "chat/chatLog"
 	"fmt"
 	"github.com/gomodule/redigo/redis"
 	"time"
@@ -65,8 +66,7 @@ func (R *RedisOpt) AddMessage(key string, messages msg.Messages, fieldName strin
 		return code, err
 	} else {
 		//写入redis
-		_, err = conn.Do("HSET", key, fieldName, messages)
-		//fmt.Println("HSET______",conn_user)
+		_, err = conn.Do("hSet", key, fieldName, messages)
 		if err != nil {
 			code = msg.FAILED
 			return code, err
@@ -94,7 +94,7 @@ func (R *RedisOpt) GetMessage(key string, fieldName []string) (messages []string
 	} else {
 		for _, field := range fieldName {
 			//改进一下，获取多个field
-			value, err := redis.String(conn.Do("HGET", key, field))
+			value, err := redis.String(conn.Do("hSet", key, field))
 			if err != nil {
 				continue
 			} else {
@@ -124,15 +124,18 @@ func (R *RedisOpt) Delete(key string) (code int, err error) {
 		return msg.FAILED, err
 	} else {
 		// 获取当前表中字段
-		keys, err := redis.Strings(conn.Do("Hkeys", key))
+		keys, err := redis.Strings(conn.Do("hKeys", key))
 		if err != nil {
-			fmt.Println("hkeys failed ", err)
+			fmt.Println("hKeys failed ", err)
 			code = msg.FAILED
 			return code, err
 		}
 		// 删除
 		for _, field := range keys {
-			conn.Do("HDEL", "user", field)
+			_, err = conn.Do("hDEL", "user", field)
+			if err != nil {
+				chatlog.Std.Error(err)
+			}
 		}
 	}
 	return msg.SUCCESS, err

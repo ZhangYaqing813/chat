@@ -3,7 +3,7 @@ package msgproc
 import (
 	msg "chat/Message_type"
 	chatlog "chat/chatLog"
-	"chat/server/untils"
+	"chat/server/utils"
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
@@ -96,14 +96,14 @@ func (M *Messager) Transmit(dialogueMessage msg.Dialogue, messages msg.Messages)
 	for _, sendToUser := range dialogueMessage.ToUsers {
 		fmt.Println("sendToUser", sendToUser)
 		if len(sendToUser) > 0 {
-			M.Conn = untils.OnlineUserInfo[sendToUser]
-			fmt.Println("M.Conn", M.Conn)
-			M.MsgSender(messages)
+			M.Conn = utils.OnlineUserInfo[sendToUser]
+			err := M.MsgSender(messages)
+			if err != nil {
+				chatlog.Std.Error(err)
+			}
 		} else {
 			break
 		}
-		continue
-
 	}
 }
 
@@ -115,7 +115,6 @@ func (M *Messager) Transmit(dialogueMessage msg.Dialogue, messages msg.Messages)
 func (M *Messager) NotifyOnline(userName string, online bool) {
 	var message msg.Messages
 	message.Type = msg.UPDATE
-	fmt.Println("NotifyOnline 被调用")
 	// 确定通知的是上线还是下线
 	if online == true {
 		message.Data = "user " + userName + " online"
@@ -123,15 +122,10 @@ func (M *Messager) NotifyOnline(userName string, online bool) {
 		message.Data = "user " + userName + " offline"
 	}
 	// 发送更新消息给在线用户列表
-	fmt.Println("显示当前上线用户~~~~", userName)
-	//for _, user := range untils.OnlineUsers {
-	for _, user := range untils.OnlineUsers {
-		//fmt.Println("当前在线用户信息11111",untils.OnlineUsers)
-		//fmt.Println(index)
+	for _, user := range utils.OnlineUsers {
 		if user != "" {
-			fmt.Println("111untils.OnlineUsers[index]", user)
-			M.Conn = untils.OnlineUserInfo[user]
-			chatlog.Std.Infof("%s 连接地址：%v", user, untils.OnlineUserInfo[user])
+			M.Conn = utils.OnlineUserInfo[user]
+			chatlog.Std.Infof("%s 连接地址：%v", user, utils.OnlineUserInfo[user])
 			err := M.MsgSender(message)
 			if err != nil {
 				chatlog.Std.Errorf("NotifyOnline MsgSender err= %v", err)

@@ -2,9 +2,10 @@ package gateway
 
 import (
 	msg "chat/Message_type"
+	chatlog "chat/chatLog"
 	mySql "chat/server/dba/mysql"
 	"chat/server/msgproc"
-	"chat/server/untils"
+	"chat/server/utils"
 	_ "encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -16,14 +17,12 @@ type Gateway struct {
 }
 
 func (G *Gateway) Gateway() {
-	slr := &untils.Slr{
+	slr := &utils.Slr{
 		MysqlConnect: mySql.MysqlConnect{
 			DB: mySql.MSconn,
 		},
 	}
 	var username_tmp string // 用于删除在线用户
-	//var message msg.Messages
-	//	go func() {
 	for {
 		message, err := G.MsgReader()
 		// 增加一步对客户端的处理，用于处理下线或直接断开的客户端，然后通知在线客户某用户下线
@@ -37,10 +36,9 @@ func (G *Gateway) Gateway() {
 
 		*/
 		if err != nil {
-			fmt.Println(" G.MsgReader() err", err)
-
+			//fmt.Println(" G.MsgReader() err", err)
 			G.NotifyOnline(username_tmp, false)
-			untils.DeleteUser(username_tmp)
+			utils.DeleteUser(username_tmp)
 			break
 		}
 		switch message.Type {
@@ -67,28 +65,24 @@ func (G *Gateway) Gateway() {
 			// 4、回复客户端认证结果
 			err = G.MsgSender(lMsg)
 			if err != nil {
-				fmt.Println("调用失败")
+				chatlog.Std.Error(err)
 			}
 			//后续操作
 			if code == msg.SUCCESS {
 				//通知其他用户改用户上线成功
 				// 当OnlineUsers 长度为零是表示没有在线用户，不需要发送用户上线通知
-				if untils.OnlineUsers[len(untils.OnlineUsers)-1] == "" {
+				if utils.OnlineUsers[len(utils.OnlineUsers)-1] == "" {
 					//上线用户加入在线用户列表
-					//fmt.Println("111111")
-					//fmt.Println("G.Messager.Conn",userinfo.UserName,G.Messager.Conn)
-					untils.AddUser(userinfo.UserName, G.Messager.Conn)
+					utils.AddUser(userinfo.UserName, G.Messager.Conn)
 				} else {
 					// 通知在线用户
-					//fmt.Println("22222222")
-					fmt.Println("当前shangxian用户信息", untils.OnlineUserInfo)
+					fmt.Println("当前shangxian用户信息", utils.OnlineUserInfo)
 					/*
 						问题描述：
 							用户上线顺序 A-B-C
 							在执行NotifyOnline，后执行 AddUser 时，NotifyOnline 通知逻辑时获取在线用户的通讯地址，然后赋值给G.conn,
 							这会导致 A收到两份C上线的通知，B无法收到C上线通知。原因是，在B上线后通知A是修改了B的通讯地址 M.conn 使其成为A
-							A的通讯地址 M.Conn = untils.OnlineUserInfo[user] （user = A）
-
+							A的通讯地址 M.Conn = utils.OnlineUserInfo[user] （user = A）
 						解决方法一：
 							修改执行顺序：
 								由 NotifyOnline -> AddUser  变成为 AddUser —> NotifyOnline
@@ -97,11 +91,9 @@ func (G *Gateway) Gateway() {
 								直接修改msgProc 的传参方式，即修改调用方式，每个方法都增加一个 conn net.conn 的参数，用于控制
 								消息发送对象。
 						本次处理方法采用第一种，第二种修改范围比较大
-
 					*/
-					untils.AddUser(userinfo.UserName, G.Messager.Conn)
+					utils.AddUser(userinfo.UserName, G.Messager.Conn)
 					G.NotifyOnline(userinfo.UserName, true)
-
 				}
 			}
 			continue
@@ -141,10 +133,9 @@ func (G *Gateway) Gateway() {
 				fmt.Println(err)
 			}
 			G.Transmit(dia, message)
+
 		default:
 			fmt.Println("and so on ......")
 		}
 	}
-	//	}()
-
 }
