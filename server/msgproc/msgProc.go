@@ -39,15 +39,15 @@ func (M *Messager) MsgReader() (messages msg.Messages, err error) {
 	_, err = M.Conn.Read(buf[:4])
 
 	if err != nil {
-		fmt.Println("接收客户端数据失败", err)
-		//chatlog.Std.Fatalf("Read msg lenth failed %v", err)
+		//fmt.Println("接收客户端数据失败", err)
+		chatlog.Std.Errorf("Read msg lenth failed %v", err)
 		return messages, err
 	}
 	n := binary.BigEndian.Uint32(buf[:4])
 	_, err = M.Conn.Read(buf[:n])
 	if err != nil {
-		fmt.Println("接收客户端数据失败", err)
-		//chatlog.Std.Fatalf("Read msg failed %v", err)
+		//fmt.Println("接收客户端数据失败", err)
+		chatlog.Std.Errorf("Read msg failed %v", err)
 		return messages, err
 	}
 	data := M.UnJson(buf[:n])
@@ -59,22 +59,23 @@ func (M *Messager) MsgReader() (messages msg.Messages, err error) {
 // 1、获取message 消息的长度，装入 buf 的前四位
 // 2、发送buf[:4] 给server 端，告知server端本次发送数据的长度
 // 3、
-func (M *Messager) MsgSender(messages msg.Messages) {
+func (M *Messager) MsgSender(messages msg.Messages) (err error) {
 	var buf [8192]byte
 	// 计算出要发送的消息体的长度，然后发送个对端，根据发送的长度进行数据校验
 	//可以在消息体message 中增加一个字段，接收者收到后取出进行对比
 	binary.BigEndian.PutUint32(buf[:4], uint32(len(M.Msgjson(messages))))
 	n, err := M.Conn.Write(buf[:4])
 	if err != nil || n != 4 {
-		chatlog.Std.Fatalf("Send msg lenth failed %v", err)
-		return
+		chatlog.Std.Errorf("Send msg lenth failed %v", err)
+		return err
 	} else {
 		_, err = M.Conn.Write(M.Msgjson(messages))
 		if err != nil {
-			chatlog.Std.Fatalf("Send msg failed %v", err)
-			return
+			chatlog.Std.Errorf("Send msg failed %v", err)
+			return err
 		}
 	}
+	return err
 }
 
 // Transmit 转发信息
@@ -93,8 +94,16 @@ func (M *Messager) MsgSender(messages msg.Messages) {
 func (M *Messager) Transmit(dialogueMessage msg.Dialogue, messages msg.Messages) {
 	// 1、 根据 dialogueMessage.ChatSignal.SendMod  模式获取发送消息对象的内存地址
 	for _, sendToUser := range dialogueMessage.ToUsers {
-		M.Conn = untils.OnlineUserInfo[sendToUser]
-		M.MsgSender(messages)
+		fmt.Println("sendToUser", sendToUser)
+		if len(sendToUser) > 0 {
+			M.Conn = untils.OnlineUserInfo[sendToUser]
+			fmt.Println("M.Conn", M.Conn)
+			M.MsgSender(messages)
+		} else {
+			break
+		}
+		continue
+
 	}
 }
 
@@ -106,19 +115,29 @@ func (M *Messager) Transmit(dialogueMessage msg.Dialogue, messages msg.Messages)
 func (M *Messager) NotifyOnline(userName string, online bool) {
 	var message msg.Messages
 	message.Type = msg.UPDATE
-
+	fmt.Println("NotifyOnline 被调用")
 	// 确定通知的是上线还是下线
-	if online {
-		message.Data = userName + "online"
+	if online == true {
+		message.Data = "user " + userName + " online"
 	} else {
-		message.Data = userName + "offline"
+		message.Data = "user " + userName + " offline"
 	}
 	// 发送更新消息给在线用户列表
-
+	fmt.Println("显示当前上线用户~~~~", userName)
+	//for _, user := range untils.OnlineUsers {
 	for _, user := range untils.OnlineUsers {
-
-		M.Conn = untils.OnlineUserInfo[user]
-		chatlog.Std.Infof("%s 连接地址：%v", user, untils.OnlineUserInfo[user])
-		M.MsgSender(message)
+		//fmt.Println("当前在线用户信息11111",untils.OnlineUsers)
+		//fmt.Println(index)
+		if user != "" {
+			fmt.Println("111untils.OnlineUsers[index]", user)
+			M.Conn = untils.OnlineUserInfo[user]
+			chatlog.Std.Infof("%s 连接地址：%v", user, untils.OnlineUserInfo[user])
+			err := M.MsgSender(message)
+			if err != nil {
+				chatlog.Std.Errorf("NotifyOnline MsgSender err= %v", err)
+			}
+		} else {
+			continue
+		}
 	}
 }

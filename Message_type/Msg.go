@@ -86,7 +86,7 @@ type UserOlineOutRedis struct {
 // Dialogue 对话信息
 
 type Dialogue struct {
-	// sendmod 可以为 S/s 单聊，M/m 多聊
+	// sendMod 可以为 S/s 单聊，M/m 多聊
 	SendMod int `json:"sendmod"`
 	// 信息发送的对象，
 	ToUsers []string `json:"users,[]string"`

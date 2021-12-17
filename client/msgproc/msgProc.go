@@ -39,12 +39,12 @@ func (M *Messager) MsgReader() (messages msg.Messages) {
 	_, err := M.Conn.Read(buf[:4])
 
 	if err == io.EOF || err != nil {
-		chatlog.Std.Fatalf("Read msg lenth failed %v", err)
+		chatlog.Std.Errorf("Read msg lenth failed %v", err)
 	}
 	n := binary.BigEndian.Uint32(buf[:4])
 	_, err = M.Conn.Read(buf[:n])
 	if err != nil {
-		chatlog.Std.Fatalf("Read msg failed %v", err)
+		chatlog.Std.Errorf("Read msg failed %v", err)
 	}
 	data := M.UnJson(buf[:n])
 	return data

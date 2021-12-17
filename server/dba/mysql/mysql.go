@@ -14,7 +14,7 @@ type MysqlConnect struct {
 }
 
 func Factroy() *sqlx.DB {
-	dbconnect, err := sqlx.Open("mysql", "root:root@tcp(172.30.1.2:3306)/chat")
+	dbconnect, err := sqlx.Open("mysql", "root:123456@tcp(172.30.1.251:3306)/chat")
 
 	if err != nil {
 		fmt.Println("mysql db connect failed", err)

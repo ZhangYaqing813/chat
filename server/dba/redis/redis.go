@@ -81,8 +81,6 @@ func (R *RedisOpt) AddMessage(key string, messages msg.Messages, fieldName strin
 func (R *RedisOpt) GetMessage(key string, fieldName []string) (messages []string, err error) {
 	fmt.Println("redis get user ", key)
 	//申请连接
-	index := 0
-
 	conn := R.pool.Get()
 	defer func() {
 		err := conn.Close()
@@ -90,14 +88,12 @@ func (R *RedisOpt) GetMessage(key string, fieldName []string) (messages []string
 			fmt.Println("redis conn close failed ", err)
 		}
 	}()
-
 	_, err = conn.Do("AUTH", "12345678")
 	if err != nil {
 		return
 	} else {
 		for _, field := range fieldName {
 			//改进一下，获取多个field
-
 			value, err := redis.String(conn.Do("HGET", key, field))
 			if err != nil {
 				continue
@@ -105,13 +101,13 @@ func (R *RedisOpt) GetMessage(key string, fieldName []string) (messages []string
 				fmt.Println("redis get user cAdd", value)
 				messages = append(messages, value)
 			}
-			index++
 		}
 	}
-
 	return messages, err
 }
 
+//Delete 只用于删除当前用户unreadMessage 中的信息
+//key 表示当前用户的unreadMessage 的实际名
 func (R *RedisOpt) Delete(key string) (code int, err error) {
 	//申请连接
 	conn := R.pool.Get()
@@ -121,21 +117,23 @@ func (R *RedisOpt) Delete(key string) (code int, err error) {
 			fmt.Println("redis conn close failed ", err)
 		}
 	}()
-
+	//用户验证
 	_, err = conn.Do("AUTH", "12345678")
 	if err != nil {
 		fmt.Println("Redis auth failed ", err)
 		return msg.FAILED, err
 	} else {
-		//for _, valud := range username {
-		//	_, err := conn.Do("HDEL", key, key)
-		//	if err != nil {
-		//		continue
-		//	}
-		//}
-		// 删除 userAUnreadMessage 这里面的所有信息。
-		// _, err = conn.Do("Hdel", key,)
-
+		// 获取当前表中字段
+		keys, err := redis.Strings(conn.Do("Hkeys", key))
+		if err != nil {
+			fmt.Println("hkeys failed ", err)
+			code = msg.FAILED
+			return code, err
+		}
+		// 删除
+		for _, field := range keys {
+			conn.Do("HDEL", "user", field)
+		}
 	}
 	return msg.SUCCESS, err
 }
