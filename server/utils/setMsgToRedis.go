@@ -2,8 +2,11 @@ package utils
 
 import (
 	messagetype "chat/Message_type"
+	chatlog "chat/chatLog"
 	redism "chat/server/dba/redis"
 )
+
+// 最终调用在信息转发的方法下
 
 /*
 	消息缓存需求：
@@ -40,10 +43,30 @@ func SetMsgToRedis(sendUser string, receiveUser []string, messages messagetype.M
 }
 
 // GetMsgFromRedis 二次封装 redis  GetMessage
-//需要进行数据的处理
-//区分获取信息的位置
+/*	需要进行数据的处理,区分获取信息的位置
+	获取redis 中的信息分为两种：
+	1、或去某个用户的未读信息
+		只需要用户名即可
+	2、获取历史信息
+		2.1、获取自己发送信息
+			可以控制根据发送对象进而获取不同的自己发送的信息
+		2.2、获取自己收到的信息
+			可以控制根据发送对象进而获取不同的自己收到的信息
+	本次不考虑这些功能，只需要取出历史信息，转发给对应的客户端即可
 
-func GetMsgFromRedis(field []string) (str []string) {
+*/
+
+// GetUnReadMsgRedis 此时的设计，field 为空，取key 中所有的值
+func GetUnReadMsgRedis(userName string) (str []string) {
+	key := userName + "UnreadMessage"
+	str, err := redism.MyRedis.GetMessage(key)
+	if err != nil {
+		chatlog.Std.Errorf("GetUnReadMsgRedis get unreadmsg failed err = %v", err)
+	}
+	return
+}
+
+func GetMsgFromRedis(key string, field []string) (str []string) {
 
 	return
 }

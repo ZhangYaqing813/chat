@@ -77,8 +77,11 @@ func (R *RedisOpt) AddMessage(key string, messages msg.Messages, fieldName strin
 }
 
 //GetMessage
+/*
+	get message 进行简化处理，一次获取指定key 的所有信息
 
-func (R *RedisOpt) GetMessage(key string, fieldName []string) (messages []string, err error) {
+*/
+func (R *RedisOpt) GetMessage(key string) (messages []string, err error) {
 	fmt.Println("redis get user ", key)
 	//申请连接
 	conn := R.pool.Get()
@@ -92,15 +95,10 @@ func (R *RedisOpt) GetMessage(key string, fieldName []string) (messages []string
 	if err != nil {
 		return
 	} else {
-		for _, field := range fieldName {
-			//改进一下，获取多个field
-			value, err := redis.String(conn.Do("hSet", key, field))
-			if err != nil {
-				continue
-			} else {
-				fmt.Println("redis get user cAdd", value)
-				messages = append(messages, value)
-			}
+		//改进一下，获取多个field
+		messages, err = redis.Strings(conn.Do("hGetAll", key))
+		if err != nil {
+			fmt.Println("redis get user err = ", err)
 		}
 	}
 	return messages, err

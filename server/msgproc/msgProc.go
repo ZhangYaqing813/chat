@@ -82,7 +82,7 @@ func (M *Messager) MsgSender(messages msg.Messages) (err error) {
 // 消息转发确定的几个问题
 /*
 1、如何调用conn.write() 把信息转发到对应的user
-	1.1 conn的信息直接以参数的形式进行传参，修改 msgsender 方法
+	1.1 conn的信息直接以参数的形式进行传参，修改 msgSender 方法
 	1.2 修改G.conn 值，然后进行方法调用，问题：会不会影响其他的正常消息发送
 2、消息中携带的信息应该有哪些
 	发送者
@@ -95,14 +95,20 @@ func (M *Messager) Transmit(dialogueMessage msg.Dialogue, messages msg.Messages)
 	// 1、 根据 dialogueMessage.ChatSignal.SendMod  模式获取发送消息对象的内存地址
 	for _, sendToUser := range dialogueMessage.ToUsers {
 		fmt.Println("sendToUser", sendToUser)
-		if len(sendToUser) > 0 {
+
+		// 增加一个判断逻辑，接收消息的用户必须在线，如果不在线需要将消息缓存到该用户的未读信息中
+		if len(sendToUser) > 0 && utils.GetUserStatus(sendToUser, utils.OnlineUsers) {
 			M.Conn = utils.OnlineUserInfo[sendToUser]
 			err := M.MsgSender(messages)
 			if err != nil {
 				chatlog.Std.Error(err)
 			}
 		} else {
-			break
+			// 把该用户添加到NotOnline 列表中
+			utils.SetNotOnLine(sendToUser)
+			// 添加到Redis UnReadMessage
+			utils.SetMsgToRedis(sendToUser, dialogueMessage.ToUsers, messages, dialogueMessage.SendTime)
+			continue
 		}
 	}
 }

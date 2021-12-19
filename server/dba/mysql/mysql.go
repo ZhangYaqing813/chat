@@ -54,14 +54,13 @@ func (M *MysqlConnect) Delete() {
 
 // Select 查找数据
 
-func (M *MysqlConnect) Select(msg message_type.LoginMsg) (userinfo []message_type.LoginMsg) {
+func (M *MysqlConnect) Select(userName string) (userinfo message_type.LoginMsg, err error) {
 
-	fmt.Println("msg message_type.LoginMsg Select ", msg)
-	err := M.DB.Select(&userinfo, "select userid,username, password from chat.users where username =? ", msg.UserName)
+	err = M.DB.Select(&userinfo, "select userid,username, password from chat.users where username =? ", userName)
 	if err != nil {
 		fmt.Println("exec failed ", err)
 		return
 	}
 	fmt.Println(userinfo)
-	return userinfo
+	return userinfo, err
 }

@@ -11,6 +11,8 @@ const (
 	UPDATE       = "UPDATE"
 	GETSENDMSG   = "SelfSend"
 	GETRECMSG    = "SelfReceive"
+	UNREADMSG    = "UnReadMsg"
+	RESPONSETF   = "ResponseTf"
 )
 
 // status code
@@ -102,6 +104,17 @@ type Dialogue struct {
 
 type History struct {
 	//对谁的聊天记录
+	MsgType  string   `json:"msgtype"`
 	User     string   `json:"user"`
 	Messages []string `json:"messages"`
+}
+
+// UnMsg 未读消息体
+type UnMsg struct {
+	Data string `json:"data"`
+}
+
+// ResponseTf 转发回复
+type ResponseTf struct {
+	Data string `json:"data"`
 }

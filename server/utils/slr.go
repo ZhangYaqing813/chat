@@ -4,6 +4,7 @@ import (
 	msg "chat/Message_type"
 	chatlog "chat/chatLog"
 	msconnecting "chat/server/dba/mysql"
+	redism "chat/server/dba/redis"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -15,11 +16,14 @@ type Slr struct {
 // 扩展：用户登录成功时可以生成一个session 表项，用户ID，client端与server端建立连接的内存地址
 // 用户登录成功后，可以进行Redis 的缓存，并设置相应的过期时间，减少sql 查询
 
-func (S *Slr) Slogin(userinfo msg.LoginMsg) (code int) {
+func (S *Slr) Slogin(userinfo msg.LoginMsg) (code int, unMessages []string) {
+
 	// 查询数据库
-	user := S.Select(userinfo)
+
+	user, _ := S.Select(userinfo.UserName)
 	// 判断用户信息是否匹配
-	if user[0].UserName == userinfo.UserName && user[0].Password == userinfo.Password {
+
+	if user.UserName == userinfo.UserName && user.Password == userinfo.Password {
 		//记录日志
 		chatlog.Std.WithFields(log.Fields{
 			"username": userinfo.UserName,
@@ -27,11 +31,21 @@ func (S *Slr) Slogin(userinfo msg.LoginMsg) (code int) {
 		}).Info("上线")
 		//设置code 值
 		code = msg.SUCCESS
+		// 增加一个步骤，当用户认证成功后，增加一个发送未读消息的功能。
+
 	} else {
 		// 如果不匹配则返回相应的值
 		code = msg.FAILED
 	}
-	return code
+
+	if GetUserStatus(userinfo.UserName, NotOnline) {
+		unMessages, err := redism.MyRedis.GetMessage(userinfo.UserName)
+		if err == nil {
+			return code, unMessages
+		}
+	}
+
+	return
 }
 
 // Register  用户注册处理功能

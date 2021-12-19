@@ -57,7 +57,8 @@ func (G *Gateway) Gateway() {
 			// 2、还原后传参给SLogin  处理
 			// 用户登录验证成功后返回给客户一个登录成功的code
 			// 单独使用一个code 变量，用于后续有需要的考虑
-			code := slr.Slogin(userinfo)
+			code, unMessages := slr.Slogin(userinfo)
+
 			// 3、接收sLogin 返回数据组装返回给client
 			resPoneLoginMsg.Code = code
 			lMsg.Type = msg.RegMsgType
@@ -67,6 +68,15 @@ func (G *Gateway) Gateway() {
 			if err != nil {
 				chatlog.Std.Error(err)
 			}
+
+			//新增发送未读信息
+			lMsg.Type = msg.UNREADMSG
+			lMsg.Data = string(G.Msgjson(unMessages))
+			err = G.MsgSender(lMsg)
+			if err != nil {
+				chatlog.Std.Errorf("未读消息发送失败= %v", err)
+			}
+
 			//后续操作
 			if code == msg.SUCCESS {
 				//通知其他用户改用户上线成功
@@ -128,12 +138,28 @@ func (G *Gateway) Gateway() {
 		//
 		case msg.ChatMode:
 			var dia msg.Dialogue
-			err = json.Unmarshal([]byte(message.Data), &dia)
-			if err != nil {
-				fmt.Println(err)
+			var tfmsg msg.Messages
+			for _, user := range dia.ToUsers {
+				//如果查询返回错误，表示该用户未注册，直接返回给client，表示该用户未注册
+				_, err := slr.Select(user)
+				if err != nil {
+					//组装一个转发失败的信息包
+					data := user + "未注册"
+					tfmsg.Type = msg.RESPONSETF
+					tfmsg.Data = string(G.Msgjson(data))
+					err = G.MsgSender(tfmsg)
+					if err != nil {
+						chatlog.Std.Error(err)
+					}
+				} else {
+					// 如果数据库中存在怎进行正常的转发逻辑
+					err = json.Unmarshal([]byte(message.Data), &dia)
+					if err != nil {
+						chatlog.Std.Error(err)
+					}
+					G.Transmit(dia, message)
+				}
 			}
-			G.Transmit(dia, message)
-
 		default:
 			fmt.Println("and so on ......")
 		}
