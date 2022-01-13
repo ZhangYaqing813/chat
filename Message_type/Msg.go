@@ -118,3 +118,39 @@ type UnMsg struct {
 type ResponseTf struct {
 	Data string `json:"data"`
 }
+
+// ClientConfig 客户端配置文件
+type ClientConfig struct {
+	ConnectIP string `ini:"connectIp"`
+	Port      int    `ini:"port"`
+}
+
+// RedisConfig redis 配置文件
+type RedisConfig struct {
+	Host string `ini:"host"`
+	Port int    `ini:"rPort"`
+	Auth string `ini:"auth"`
+	Db   int    `ini:"db"`
+}
+
+// MysqlConfig 配置文件
+type MysqlConfig struct {
+	Address  string `ini:"address"`
+	Port     int    `ini:"mPort"`
+	Username string `ini:"username"`
+	Pwd      string `ini:"pwd"`
+	Dbname   string `ini:"dbname"`
+}
+
+// SvcConfig Svc 服务器监听配置
+type SvcConfig struct {
+	ListenIP string `ini:"listenIp"`
+	Port     int    `ini:"serverPort"`
+}
+
+// ServerConfig  服务器配置文件
+type ServerConfig struct {
+	RedisConfig `ini:"redis""`
+	MysqlConfig `ini:"mysql"`
+	SvcConfig   `ini:"server"`
+}
