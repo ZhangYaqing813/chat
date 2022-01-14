@@ -13,15 +13,15 @@ type MysqlConnect struct {
 	DB *sqlx.DB
 }
 
-func Factroy() *sqlx.DB {
-	dbconnect, err := sqlx.Open("mysql", "root:123456@tcp(172.30.1.251:3306)/chat")
+func Factroy(user, password, address, dbname string, port int) *sqlx.DB {
+	//修改了连接方式
+	socket := user + ":" + password + "@tcp" + "(" + address + ":" + string(port) + "/" + dbname
+	dbconnect, err := sqlx.Open("mysql", socket)
 
 	if err != nil {
 		fmt.Println("mysql db connect failed", err)
 	}
 	fmt.Println("mysql factory running")
-	//defer dbconnect.Close()
-
 	return dbconnect
 }
 
@@ -61,6 +61,6 @@ func (M *MysqlConnect) Select(userName string) (userinfo message_type.LoginMsg, 
 		fmt.Println("exec failed ", err)
 		return
 	}
-	fmt.Println(userinfo)
+	//fmt.Println(userinfo)
 	return userinfo, err
 }
