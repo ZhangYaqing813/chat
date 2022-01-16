@@ -2,7 +2,9 @@ package memnu
 
 import (
 	messagetype "chat/Message_type"
+	chatlog "chat/chatLog"
 	"chat/client/client_func"
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -79,13 +81,12 @@ func (M *Menus) loginLevel(loginUser string) {
 		fmt.Println("1、单聊")
 		fmt.Println("2、群聊")
 		fmt.Println("3、更新在线用户")
-		fmt.Println("4、退出")
+		fmt.Println("4、更新用户信息")
 		fmt.Println("请输入选项：")
 		fmt.Scanf("%d\n", &skey)
 		switch skey {
 
 		case 1:
-
 			// 配置 聊天模式位单聊，
 			dialogue.SendMod = messagetype.SINGLE
 			// 消息发送对象
@@ -130,9 +131,48 @@ func (M *Menus) loginLevel(loginUser string) {
 			//fmt.Println(message)
 
 		case 4:
-			//用户退出
-
+			//更新用户信息
+			M.Modify()
 		}
 	}
 
+}
+
+func (M *Menus) Modify() {
+	//1、输入修改信息
+	var modify messagetype.UserUpdate
+	var upMessage messagetype.Messages
+	var key int
+
+	for {
+		fmt.Println("1、修改用密码")
+		fmt.Println("2、修改email")
+		fmt.Println("2、退出")
+		fmt.Println("请输入选项：")
+		fmt.Scanf("%d\n", &key)
+		switch key {
+		case 1:
+			fmt.Println("请输入新的密码")
+			modify.FieldName = "password"
+			fmt.Scanf("%s\n", &modify.NewContent)
+		case 2:
+			fmt.Println("请输入新的email")
+			modify.FieldName = "email"
+			fmt.Scanf("%s\n", &modify.NewContent)
+
+		default:
+			fmt.Println("暂不支持修改该字段")
+			break
+		}
+		//2、组装信息
+		upMessage.Type = messagetype.UPDATE
+		data, err := json.Marshal(modify)
+		if err != nil {
+			chatlog.Std.Error(err)
+		}
+		upMessage.Data = string(data)
+		//3、发送信息
+		M.MsgSender(upMessage)
+
+	}
 }

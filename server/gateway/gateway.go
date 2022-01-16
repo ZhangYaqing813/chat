@@ -22,7 +22,8 @@ func (G *Gateway) Gateway() {
 			DB: mySql.MSconn,
 		},
 	}
-	var username_tmp string // 用于删除在线用户
+	// 用于删除在线用户、等后续操作
+	var username_tmp string
 	for {
 		message, err := G.MsgReader()
 		// 增加一步对客户端的处理，用于处理下线或直接断开的客户端，然后通知在线客户某用户下线
@@ -160,6 +161,43 @@ func (G *Gateway) Gateway() {
 					G.Transmit(dia, message)
 				}
 			}
+
+		case msg.UPDATE:
+			// 接收client 发送的用户更新信息
+			// 解析出来有效的数据
+			var modify msg.UserUpdate
+			// 回复client 消息体
+			var response msg.Response
+			var reMessage msg.Messages
+			err := json.Unmarshal([]byte(message.Data), &modify)
+			if err != nil {
+				chatlog.Std.Error("UPDATE info Unmarshal failed ", err)
+			}
+
+			// 调用用户更新方法
+			code, err := slr.Modify(modify, username_tmp)
+			if code == msg.SUCCESS {
+				response.Code = msg.SUCCESS
+				response.Info = "修改成功"
+			} else {
+				response.Code = msg.FAILED
+				response.Info = "修改失败，请联系管理员"
+			}
+
+			reMessage.Type = msg.RESPONSE
+			data, err := json.Marshal(response)
+			if err != nil {
+				chatlog.Std.Error(err)
+				return
+			}
+			reMessage.Data = string(data)
+
+			err = G.MsgSender(reMessage)
+			if err != nil {
+				chatlog.Std.Error(err)
+			}
+			// 返回处理结果
+
 		default:
 			fmt.Println("and so on ......")
 		}

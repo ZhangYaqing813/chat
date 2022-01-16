@@ -13,6 +13,7 @@ const (
 	GETRECMSG    = "SelfReceive"
 	UNREADMSG    = "UnReadMsg"
 	RESPONSETF   = "ResponseTf"
+	RESPONSE     = "Response"
 )
 
 // status code
@@ -47,6 +48,12 @@ type LResMsg struct {
 	Error string `json:"Error"`
 }
 
+// Response 增加一个新的结构类型，用于回复client 请求后的消息体
+type Response struct {
+	Code int    `json:"code"`
+	Info string `json:"info"`
+}
+
 //Messages 要发送的信息
 type Messages struct {
 	//发送的消息类型
@@ -55,6 +62,7 @@ type Messages struct {
 	Data string `json:"data"`
 }
 
+// RegMsg 注册信息
 type RegMsg struct {
 	// 用户Id
 	UserID int `json:"userid" DB:"userid"`
@@ -66,6 +74,14 @@ type RegMsg struct {
 	UserEmail string `json:"email" DB:"email"`
 	//Sex
 	Sex string `json:"sex" DB:"sex"`
+}
+
+//
+type UserUpdate struct {
+	// 更新字段的字段名 如：email 、password 等
+	FieldName string `json:"fieldName"`
+	// 更新的内用
+	NewContent string `json:"newContent"`
 }
 
 // UserOnline  获取redis 中在线用户的用户名
@@ -128,7 +144,7 @@ type ClientConfig struct {
 // RedisConfig redis 配置文件
 type RedisConfig struct {
 	Host string `ini:"host"`
-	Port int    `ini:"rPort"`
+	Port string `ini:"rPort"`
 	Auth string `ini:"auth"`
 	Db   int    `ini:"db"`
 }
@@ -136,7 +152,7 @@ type RedisConfig struct {
 // MysqlConfig 配置文件
 type MysqlConfig struct {
 	Address  string `ini:"address"`
-	Port     int    `ini:"mPort"`
+	Port     string `ini:"mPort"`
 	Username string `ini:"username"`
 	Pwd      string `ini:"pwd"`
 	Dbname   string `ini:"dbname"`

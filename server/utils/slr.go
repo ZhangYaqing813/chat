@@ -5,6 +5,7 @@ import (
 	chatlog "chat/chatLog"
 	msconnecting "chat/server/dba/mysql"
 	redism "chat/server/dba/redis"
+	"fmt"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -23,7 +24,7 @@ func (S *Slr) Slogin(userinfo msg.LoginMsg) (code int, unMessages []string) {
 	user, _ := S.Select(userinfo.UserName)
 	// 判断用户信息是否匹配
 
-	if user.UserName == userinfo.UserName && user.Password == userinfo.Password {
+	if user[0].UserName == userinfo.UserName && user[0].Password == userinfo.Password {
 		//记录日志
 		chatlog.Std.WithFields(log.Fields{
 			"username": userinfo.UserName,
@@ -37,7 +38,7 @@ func (S *Slr) Slogin(userinfo msg.LoginMsg) (code int, unMessages []string) {
 		// 如果不匹配则返回相应的值
 		code = msg.FAILED
 	}
-
+	// 用户登录后去查询redis 是否有未读信息，如果有则发送。
 	if GetUserStatus(userinfo.UserName, NotOnline) {
 		unMessages, err := redism.MyRedis.GetMessage(userinfo.UserName)
 		if err == nil {
@@ -59,6 +60,25 @@ func (S *Slr) Register(regMsg msg.RegMsg) (code int, err error) {
 		return
 	} else {
 		code = msg.SUCCESS
+	}
+	return code, err
+}
+
+// Modify 更新用户信息（主要针对更新用户信息，密码或者email）
+func (S *Slr) Modify(modify msg.UserUpdate, userName string) (code int, err error) {
+	// 检查当前用户是否在线，如果不在线怎不能进行信息的修改
+	if GetUserStatus(userName, OnlineUsers) {
+		res, err := S.Update(modify, userName)
+		if res > 0 {
+			chatlog.Std.Info("modify user info OK")
+			code = msg.SUCCESS
+		} else {
+			code = msg.FAILED
+			chatlog.Std.Error("modify user info failed ", err)
+		}
+	} else {
+		code = msg.FAILED
+		err = fmt.Errorf("当前用户未登录，请登录后进行修改")
 	}
 	return code, err
 }

@@ -9,7 +9,6 @@ import (
 	"chat/server/msgproc"
 	log "github.com/sirupsen/logrus"
 	"net"
-	"os"
 )
 
 /*
@@ -21,9 +20,9 @@ server.go 主要包括两个部分，一部分是基础环境的初始化，比�
 func init() {
 	//初始化工作
 	// 初始化mysql 链接
-	file := os.Args[1]
+	//file := os.Args[1]
 	//增加配置文件解析
-	loadConfig.ServerFac(file)
+	loadConfig.ServerFac("./loadConfig/config/serverConfig.ini")
 	cfg := &loadConfig.ServerCfg
 	msconnecting.MSconn = msconnecting.Factroy(cfg.Username, cfg.Pwd, cfg.Address, cfg.Dbname, cfg.MysqlConfig.Port)
 	//初始话redis
@@ -36,7 +35,7 @@ func init() {
 func main() {
 
 	//打开监听地址
-	lister, err := net.Listen("tcp", "127.0.0.1:19000")
+	lister, err := net.Listen("tcp", "127.0.0.1:9000")
 	if err != nil {
 		chatlog.Std.Fatal(err)
 	}

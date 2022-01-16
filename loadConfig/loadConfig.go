@@ -3,7 +3,6 @@ package loadConfig
 import (
 	messagetype "chat/Message_type"
 	chatlog "chat/chatLog"
-	"fmt"
 	"io/ioutil"
 	"reflect"
 	"strconv"
@@ -43,7 +42,7 @@ func ServerLoadConfig(file string, ServerCfg *messagetype.ServerConfig) {
 	//1.2 转换为字符串
 	cfg := strings.Split(string(b), "\r\n")
 	//2、解析
-	fmt.Println(cfg)
+	//fmt.Println(cfg)
 	//2.1 解析读取到的配置文件
 	for idx, line := range cfg {
 		//2.2 判断配置文件中行是否存在不符合的语法的行
@@ -68,7 +67,7 @@ func ServerLoadConfig(file string, ServerCfg *messagetype.ServerConfig) {
 				//根据代码中配置结构体的tag 字段信息找到对应的节点信息
 				if fieldName.Tag.Get("ini") == sectionName {
 					conStructName = fieldName.Name
-					chatlog.Std.Infof("找到与配置文件 %s 应的节点信息")
+					chatlog.Std.Infof("找到与配置文件 %s 应的节点信息", conStructName)
 					break
 				}
 			}
@@ -108,7 +107,7 @@ func ServerLoadConfig(file string, ServerCfg *messagetype.ServerConfig) {
 			//3.3 对应的字段进行赋值操作
 			//获取到节点字段
 			fieldobj := subConfV.FieldByName(subConFieldName)
-			switch fieldobj.Type().Kind() {
+			switch fieldobj.Kind() {
 			case reflect.String:
 				fieldobj.SetString(value)
 			case reflect.Int, reflect.Int16, reflect.Int32, reflect.Int64:
